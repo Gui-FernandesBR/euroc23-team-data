@@ -48,7 +48,7 @@ def main(folder):
                 print(f"No 'ts' column in {name}")
 
         # remove unnecessary columns
-        to_be_removed = ["id_x", "id_y", "voltage"]
+        to_be_removed = ["id_x", "id_y", "acceleration", "height", "voltage"]
         df_all.drop(columns=to_be_removed, inplace=True, errors="ignore")
 
         # sort the dataframe ascending order column "ts"
@@ -65,19 +65,13 @@ def main(folder):
         df_all["Gz"] = df_all["Gz"].round(4)  # Gyroscope data
         df_all["T"] = df_all["T"].round(1)  # Temperature
         df_all["P"] = df_all["P"].round()  # Pressure
-        df_all["height"] = df_all["height"].round(2)  # Height
-        df_all["velocity"] = df_all["velocity"].round(3)  # Velocity
-        df_all["acceleration"] = df_all["acceleration"].round(3)  # Acceleration
-        df_all["q0_estimated"] = df_all["q0_estimated"].round(5)  # Quaternion
-        df_all["q1_estimated"] = df_all["q1_estimated"].round(5)  # Quaternion
-        df_all["q2_estimated"] = df_all["q2_estimated"].round(5)  # Quaternion
-        df_all["q3_estimated"] = df_all["q3_estimated"].round(5)  # Quaternion
-        df_all["filtered_altitude_AGL"] = df_all["filtered_altitude_AGL"].round(
-            2
-        )  # Filtered altitude
-        df_all["filtered_acceleration"] = df_all["filtered_acceleration"].round(
-            3
-        )  # Filtered acceleration
+        df_all["velocity"] = df_all["velocity"].round(3)
+        df_all["q0_estimated"] = df_all["q0_estimated"].round(5)
+        df_all["q1_estimated"] = df_all["q1_estimated"].round(5)
+        df_all["q2_estimated"] = df_all["q2_estimated"].round(5)
+        df_all["q3_estimated"] = df_all["q3_estimated"].round(5)
+        df_all["filtered_altitude_AGL"] = df_all["filtered_altitude_AGL"].round(2)
+        df_all["filtered_acceleration"] = df_all["filtered_acceleration"].round(3)
 
         # remove any duplicated value of "ts" column
         df_all.drop_duplicates(subset="ts", inplace=True)
