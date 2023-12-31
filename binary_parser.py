@@ -131,6 +131,7 @@ def extract_data(
     flight_states = log_dict["flight_states"]
     event_info = log_dict["event_info"]
     error_info = log_dict["error_info"]
+    gnss_info = log_dict["gnss_info"]
     voltage_info = log_dict["voltage_info"]
     first_ts = log_dict["first_ts"]
 
@@ -142,6 +143,7 @@ def extract_data(
     event_info_df = pd.DataFrame(event_info)
     error_info_df = pd.DataFrame(error_info)
     flight_states_df = pd.DataFrame(flight_states)
+    gnss_info_df = pd.DataFrame(gnss_info)
     voltage_info_df = pd.DataFrame(voltage_info)
 
     # save raw logs
@@ -157,6 +159,7 @@ def extract_data(
     event_info_df.to_csv(f"{raw_output_dir}/{base_name} - event_info_raw.csv")
     error_info_df.to_csv(f"{raw_output_dir}/{base_name} - error_info_raw.csv")
     flight_states_df.to_csv(f"{raw_output_dir}/{base_name} - flight_states_raw.csv")
+    gnss_info_df.to_csv(f"{raw_output_dir}/{base_name} - gnss_info_raw.csv")
     voltage_info_df.to_csv(f"{raw_output_dir}/{base_name} - voltage_info_raw.csv")
     orientation_info_df
 
@@ -179,6 +182,7 @@ def extract_data(
     offset_col(flight_info_df, "ts", zero_ts)
     offset_col(filtered_data_info_df, "ts", zero_ts)
     offset_col(voltage_info_df, "ts", zero_ts)
+    offset_col(gnss_info_df, "ts", zero_ts)
 
     scale_col(imu_df, "ts", 1000)
     scale_col(baro_df, "ts", 1000)
@@ -186,6 +190,7 @@ def extract_data(
     scale_col(flight_info_df, "ts", 1000)
     scale_col(filtered_data_info_df, "ts", 1000)
     scale_col(voltage_info_df, "ts", 1000)
+    scale_col(gnss_info_df, "ts", 1000)
 
     if len(event_info_df) > 0:
         offset_col(event_info_df, "ts", zero_ts)
@@ -242,6 +247,7 @@ def extract_data(
     flight_states_df.to_csv(
         f"{processed_output_dir}/{base_name} - flight_states_processed.csv"
     )
+    gnss_info_df.to_csv(f"{processed_output_dir}/{base_name} - gnss_info_processed.csv")
     voltage_info_df.to_csv(
         f"{processed_output_dir}/{base_name} - voltage_info_processed.csv"
     )
@@ -256,6 +262,7 @@ def extract_data(
             "event_info_df": event_info_df,
             "error_info_df": error_info_df,
             "flight_states_df": flight_states_df,
+            "gnss_info_df": gnss_info_df,
             "voltage_info_df": voltage_info_df,
         },
         plot_output_dir,
@@ -272,6 +279,7 @@ def parse_log(log_b: bytes):
     flight_states = []
     event_info = []
     error_info = []
+    gnss_info = []
     voltage_info = []
     first_ts = -1
     last_ts = -1
@@ -377,7 +385,18 @@ def parse_log(log_b: bytes):
                 i += 4
             elif t_without_id == REC_TYPE.GNSS_INFO:
                 # print(f"GNSS_INFO found at {i}")
-                i += 9  # no idea if this is correct
+                latitude, longitude, satellites = struct.unpack(
+                    "<ffB", log_b[i : i + 9]
+                )
+                gnss_info.append(
+                    {
+                        "ts": ts,
+                        "latitude": latitude,
+                        "longitude": longitude,
+                        "satellites": satellites,
+                    }
+                )
+                i += 9
             elif t_without_id == REC_TYPE.VOLTAGE_INFO:
                 # print(f"VOLTAGE_INFO found at {i}")
                 voltage = struct.unpack("<H", log_b[i : i + 2])[0]
@@ -397,9 +416,9 @@ def parse_log(log_b: bytes):
     except Exception as e:
         print(f"Parsing ended with error: {e}")
     # finally:
-    #     print(
-    #         f"Parsing ended at position: {i}/{len(log_b)}\nFirst timestamp: {first_ts / 1000}s; Last timestamp: {last_ts / 1000}s"
-    #     )
+    #      print(
+    #           f"Parsing ended at position: {i}/{len(log_b)}\nFirst timestamp: {first_ts / 1000}s; Last timestamp: {last_ts / 1000}s"
+    #    )
 
     return {
         "imu": imu,
@@ -410,6 +429,7 @@ def parse_log(log_b: bytes):
         "flight_states": flight_states,
         "event_info": event_info,
         "error_info": error_info,
+        "gnss_info": gnss_info,
         "voltage_info": voltage_info,
         "first_ts": first_ts,
     }
