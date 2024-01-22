@@ -32,10 +32,10 @@ def main(folder):
             if name in ["flight_states_df", "error_info_df", "event_info_df"]:
                 continue
             if "q0_estimated" in df.columns:
-                df["q0_estimated"] = df["q0_estimated"] / 10
-                df["q1_estimated"] = df["q1_estimated"] / 10
-                df["q2_estimated"] = df["q2_estimated"] / 10
-                df["q3_estimated"] = df["q3_estimated"] / 10
+                df["q0_estimated"] = round(df["q0_estimated"] / 10, 4)
+                df["q1_estimated"] = round(df["q1_estimated"] / 10, 4)
+                df["q2_estimated"] = round(df["q2_estimated"] / 10, 4)
+                df["q3_estimated"] = round(df["q3_estimated"] / 10, 4)
             if "ts" in df.columns:
                 df.drop_duplicates(subset="ts", inplace=True)
                 df.dropna(how="all", inplace=True)
